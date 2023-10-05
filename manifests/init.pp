@@ -105,8 +105,8 @@
 class monit (
   Array[String]                           $alert_emails              = $monit::params::alert_emails,
   Integer[1]                              $check_interval            = $monit::params::check_interval,
-  String                                  $config_file               = $monit::params::config_file,
-  String                                  $config_dir                = $monit::params::config_dir,
+  Stdlib::Absolutepath                    $config_file               = $monit::params::config_file,
+  Stdlib::Absolutepath                    $config_dir                = $monit::params::config_dir,
   Variant[Boolean, Enum['true', 'false']] $config_dir_purge          = $monit::params::config_dir_purge,
   Variant[Boolean, Enum['true', 'false']] $httpd                     = $monit::params::httpd,
   Integer[1, 65535]                       $httpd_port                = $monit::params::httpd_port,
@@ -114,7 +114,7 @@ class monit (
   String                                  $httpd_allow               = $monit::params::httpd_allow,
   String                                  $httpd_user                = $monit::params::httpd_user,
   String                                  $httpd_password            = $monit::params::httpd_password,
-  Optional[String]                        $logfile                   = $monit::params::logfile,
+  Optional[Monit::Logfile]                $logfile                   = $monit::params::logfile,
   Optional[String]                        $mailserver                = $monit::params::mailserver,
   Optional[Hash]                          $mailformat                = $monit::params::mailformat,
   Variant[Boolean, Enum['true', 'false']] $manage_firewall           = $monit::params::manage_firewall,
@@ -133,57 +133,48 @@ class monit (
   Optional[Integer[1]]                    $start_delay               = $monit::params::start_delay,
 ) inherits monit::params {
   # <stringified variable handling>
-  if is_string($httpd) == true {
+  if $httpd =~ String {
     $httpd_bool = str2bool($httpd)
   } else {
     $httpd_bool = $httpd
   }
 
-  if is_string($manage_firewall) == true {
+  if $manage_firewall =~ String {
     $manage_firewall_bool = str2bool($manage_firewall)
   } else {
     $manage_firewall_bool = $manage_firewall
   }
 
-  if is_string($service_enable) == true {
+  if $service_enable =~ String {
     $service_enable_bool = str2bool($service_enable)
   } else {
     $service_enable_bool = $service_enable
   }
 
-  if is_string($service_manage) == true {
+  if $service_manage =~ String {
     $service_manage_bool = str2bool($service_manage)
   } else {
     $service_manage_bool = $service_manage
   }
 
-  if is_string($mmonit_https) == true {
+  if $mmonit_https =~ String {
     $mmonit_https_bool = str2bool($mmonit_https)
   } else {
     $mmonit_https_bool = $mmonit_https
   }
 
-  if is_string($mmonit_without_credential) == true {
+  if $mmonit_without_credential =~ String {
     $mmonit_without_credential_bool = str2bool($mmonit_without_credential)
   } else {
     $mmonit_without_credential_bool = $mmonit_without_credential
   }
 
-  if is_string($config_dir_purge) == true {
+  if $config_dir_purge =~ String {
     $config_dir_purge_bool = str2bool($config_dir_purge)
   } else {
     $config_dir_purge_bool = $config_dir_purge
   }
   # </stringified variable handling>
-
-  # <variable validations>
-  validate_absolute_path($config_file)
-  validate_absolute_path($config_dir)
-
-  if $logfile and !($logfile =~ /^syslog(\s+facility\s+log_(local[0-7]|daemon))?/) {
-    validate_absolute_path($logfile)
-  }
-  # </variable validations>
 
   # Use the monit_version fact if available, else use the default for the
   # platform.
